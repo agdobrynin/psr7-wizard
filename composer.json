@@ -1,0 +1,54 @@
+{
+    "name": "kaspi/psr7-globals",
+    "description": "Creating PSR-7 ServerRequest from global variables",
+    "keywords": ["http-message", "psr-7", "psr-17"],
+    "type": "library",
+    "require": {
+        "php": "^8.1 || ^8.2 || ^8.3",
+        "psr/http-message": "1.1 || ^2.0",
+        "psr/http-factory": "^1.0"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Kaspi\\Psr7Globals\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\Kaspi\\Psr7Globals\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Alexey Dobrynin",
+            "email": "ag.dobrynin@gmail.com",
+            "homepage": "https://github.com/agdobrynin"
+        }
+    ],
+    "minimum-stability": "stable",
+    "scripts": {
+        "fixer" : "./vendor/bin/php-cs-fixer fix",
+        "test" : "./vendor/bin/pest --compact --no-coverage",
+        "phan" : "./vendor/bin/phan",
+        "phan-poly" : "./vendor/bin/phan --allow-polyfill-parser"
+    },
+    "scripts-descriptions": {
+        "fixer": "Run PHP Coding Standards Fixer",
+        "test" : "Run Pest",
+        "phan" : "Run static analizer with AST extention",
+        "phan-poly" : "Run static analizer with with polyfill parser (without AST extention)"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.46",
+        "phan/phan": "^5.4",
+        "pestphp/pest": "^2.31",
+        "mikey179/vfsstream": "^1.6",
+        "kaspi/http-message": "^1.1"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}
