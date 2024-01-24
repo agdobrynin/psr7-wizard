@@ -1,9 +1,10 @@
 # 🧙🏻‍♂️ Build PSR-7 ServerRequestInterface from global PHP variables.
 
-`kaspi/psr7-globals` help build PSR7 ServerRequestInterface compatible class.
+`kaspi/psr7-globals` helper build PSR7 ServerRequestInterface compatible class.
 
 Require PHP 8.1 or newest.
 
+additional links:
 - [PSR-7](https://www.php-fig.org/psr/psr-7)
 - [PSR-17](https://www.php-fig.org/psr/psr-17) 
 
@@ -11,6 +12,12 @@ Require PHP 8.1 or newest.
 
 ```shell
 composer kaspi/psr7-globals
+```
+
+## Usage
+
+```php
+$serverRequest = (new ServerRequestHelper())->fromGlobals()
 ```
 
 ## Development environment
@@ -29,7 +36,7 @@ composer test
 ```
 Running tests with checking code coverage by tests with a report in html format
 ```shell
-./vendor/bin/pest --compact
+./vendor/bin/pest
 ```
 Requires installed [PCOV](https://github.com/krakjoe/pcov) driver
 
@@ -78,7 +85,7 @@ Phan (_static analyzer for PHP_)
 docker-compose run --rm php vendor/bin/phan
 ```
 
-You can work in a shell in a docker container:
+You can work in a shell into a docker container:
 ```shell
 docker-compose run --rm php sh
 ```
