@@ -805,16 +805,16 @@
         },
         {
             "name": "kaspi/http-message",
-            "version": "v1.2.0",
+            "version": "v1.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/agdobrynin/http-message.git",
-                "reference": "2b2587364c05f3b25d6f86a7a382d2f0fc898ebb"
+                "reference": "b3693e904cc317fdd92f5b520e6d04ec07080675"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/agdobrynin/http-message/zipball/2b2587364c05f3b25d6f86a7a382d2f0fc898ebb",
-                "reference": "2b2587364c05f3b25d6f86a7a382d2f0fc898ebb",
+                "url": "https://api.github.com/repos/agdobrynin/http-message/zipball/b3693e904cc317fdd92f5b520e6d04ec07080675",
+                "reference": "b3693e904cc317fdd92f5b520e6d04ec07080675",
                 "shasum": ""
             },
             "require": {
@@ -853,9 +853,9 @@
             ],
             "support": {
                 "issues": "https://github.com/agdobrynin/http-message/issues",
-                "source": "https://github.com/agdobrynin/http-message/tree/v1.2.0"
+                "source": "https://github.com/agdobrynin/http-message/tree/v1.2.1"
             },
-            "time": "2024-01-24T09:19:49+00:00"
+            "time": "2024-01-25T05:54:59+00:00"
         },
         {
             "name": "microsoft/tolerant-php-parser",
