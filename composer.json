@@ -1,5 +1,5 @@
 {
-    "name": "kaspi/psr7-globals",
+    "name": "kaspi/psr7-wizard",
     "description": "Creating PSR-7 ServerRequest from global variables",
     "keywords": ["http-message", "psr-7", "psr-17"],
     "type": "library",
@@ -11,12 +11,12 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Kaspi\\Psr7Globals\\": "src"
+            "Kaspi\\Psr7Wizard\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\Kaspi\\Psr7Globals\\": "tests/"
+            "Tests\\Kaspi\\Psr7Wizard\\": "tests/"
         }
     },
     "authors": [
