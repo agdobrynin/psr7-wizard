@@ -49,12 +49,12 @@ class ServerRequestWizard
         $scheme = $serverParams['REQUEST_SCHEME'] ?? '';
 
         if ('' === $scheme) {
-            $scheme = 'off' !== ($serverParams['HTTPS'] ?? null) ? 'https' : 'http';
+            $scheme = 'on' === ($serverParams['HTTPS'] ?? null) ? 'https' : 'http';
         }
 
-        $host = $serverParams['HTTP_HOST'] ?? $serverParams['SERVER_NAME'] ?? 'localhost';
+        $host = $serverParams['HTTP_HOST'] ?? $serverParams['SERVER_NAME'] ?? '';
 
-        if ('' !== ($port = $serverParams['SERVER_PORT'])
+        if ('' !== ($port = $serverParams['SERVER_PORT'] ?? '')
             && 1 !== preg_match('/:(\d+)$/', $host)) {
             $host .= ':'.$port;
         }
