@@ -1,6 +1,4 @@
-# 🧙🏻‍♂️ Build PSR-7 ServerRequestInterface from global PHP variables.
-
-`kaspi/psr7-globals` helper build PSR7 ServerRequestInterface compatible class.
+# 🧙🏻‍♂️ Building ServerRequest class which implement PSR-7 ServerRequestInterface from global PHP variables.
 
 Require PHP 8.1 or newest.
 
@@ -11,13 +9,23 @@ additional links:
 ## Installation
 
 ```shell
-composer kaspi/psr7-globals
+composer kaspi/psr7-wizard
 ```
 
 ## Usage
 
 ```php
-$serverRequest = (new ServerRequestHelper())->fromGlobals()
+// Example build ServerRequest class with package kaspi/http-message
+
+$httpFactory = new \Kaspi\HttpMessage\HttpFactory();
+
+/** @var \Psr\Http\Message\ServerRequestInterface $serverRequest */
+$serverRequest = (new \Kaspi\Psr7Wizard\ServerRequestWizard(
+    serverRequestFactory: $httpFactory,
+    streamFactory: $httpFactory,
+    uploadedFileFactory: $httpFactory,
+    uriFactory: $httpFactory,  
+))->fromGlobals();
 ```
 
 ## Development environment
