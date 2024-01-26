@@ -11,6 +11,7 @@ use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
 
+use function in_array;
 use function preg_match;
 
 class ServerRequestWizard
@@ -48,7 +49,7 @@ class ServerRequestWizard
     {
         $scheme = $serverParams['HTTP_X_FORWARDED_PROTO']
             ?? $serverParams['REQUEST_SCHEME']
-            ?? \in_array(($serverParams['HTTPS'] ?? null), ['on', '1'], true)
+            ?? in_array($serverParams['HTTPS'] ?? null, ['on', '1'], true)
             ? 'https'
             : 'http';
 
