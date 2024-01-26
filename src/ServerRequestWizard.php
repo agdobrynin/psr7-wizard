@@ -65,7 +65,9 @@ class ServerRequestWizard
             $requestUri = $phpSelf.($query = $serverParams['QUERY_STRING'] ?? '') ? '?'.$query : '';
         }
 
-        $uriString = $scheme.'://'.$host.($requestUri ?? '');
+        $uriString = $scheme && $host
+            ? $scheme.'://'.$host.($requestUri ?? '')
+            : '';
 
         return $this->uriFactory->createUri($uriString);
     }

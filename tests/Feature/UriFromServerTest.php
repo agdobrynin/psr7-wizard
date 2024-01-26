@@ -19,10 +19,10 @@ use Psr\Http\Message\ServerRequestInterface;
         ->and((string) $sr->getUri())->toBe($expectUri)
     ;
 })
-    ->with([
+    ->with('server_request', [
         'empty' => [
             'server' => [],
-            'expectUri' => 'http://localhost',
+            'expectUri' => '',
         ],
     ])
     ->covers(ServerRequestWizard::class);
