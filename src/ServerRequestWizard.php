@@ -48,7 +48,7 @@ class ServerRequestWizard
     {
         $scheme = $serverParams['HTTP_X_FORWARDED_PROTO']
             ?? $serverParams['REQUEST_SCHEME']
-            ?? 'on' === ($serverParams['HTTPS'] ?? null)
+            ?? \in_array(($serverParams['HTTPS'] ?? null), ['on', '1'], true)
             ? 'https'
             : 'http';
 

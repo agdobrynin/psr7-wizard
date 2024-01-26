@@ -70,7 +70,7 @@ use Psr\Http\Message\ServerRequestInterface;
                 'QUERY_STRING' => 'list=ok',
                 'HTTPS' => '1',
             ],
-            'expect' => 'http://127.0.0.1:8080/',
+            'expect' => 'https://127.0.0.1:8080/',
         ],
         'not has HTTP_HOST' => [
             'server' => [
