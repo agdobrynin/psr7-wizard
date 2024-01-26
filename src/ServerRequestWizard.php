@@ -46,13 +46,19 @@ class ServerRequestWizard
 
     private function createUriFromServer(array $serverParams): UriInterface
     {
-        $scheme = $serverParams['REQUEST_SCHEME'] ?? '';
+        $scheme = $serverParams['HTTP_X_FORWARDED_PROTO']
+            ?? $serverParams['REQUEST_SCHEME']
+            ?? 'on' === ($serverParams['HTTPS'] ?? null)
+            ? 'https'
+            : 'http';
 
-        if ('' === $scheme) {
-            $scheme = 'on' === ($serverParams['HTTPS'] ?? null) ? 'https' : 'http';
+        $host = $serverParams['HTTP_HOST']
+            ?? $serverParams['SERVER_NAME']
+            ?? '';
+
+        if ('' === $host) {
+            return $this->uriFactory->createUri();
         }
-
-        $host = $serverParams['HTTP_HOST'] ?? $serverParams['SERVER_NAME'] ?? '';
 
         if ('' !== ($port = $serverParams['SERVER_PORT'] ?? '')
             && 1 !== preg_match('/:(\d+)$/', $host)) {
@@ -62,12 +68,13 @@ class ServerRequestWizard
         if ('' !== ($requestUriWithQuery = $serverParams['REQUEST_URI'] ?? '')) {
             $requestUri = $requestUriWithQuery;
         } elseif ('' !== ($phpSelf = $serverParams['PHP_SELF'] ?? '')) {
-            $requestUri = $phpSelf.($query = $serverParams['QUERY_STRING'] ?? '') ? '?'.$query : '';
+            $requestUri = $phpSelf
+                .('' !== ($query = $serverParams['QUERY_STRING'] ?? '')
+                    ? '?'.$query
+                    : '');
         }
 
-        $uriString = $scheme && $host
-            ? $scheme.'://'.$host.($requestUri ?? '')
-            : '';
+        $uriString = $scheme.'://'.$host.($requestUri ?? '');
 
         return $this->uriFactory->createUri($uriString);
     }
