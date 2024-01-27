@@ -11,8 +11,15 @@ use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
 
+use function function_exists;
+use function getallheaders;
 use function in_array;
 use function preg_match;
+use function str_starts_with;
+use function strtolower;
+use function strtr;
+use function substr;
+use function ucwords;
 
 class ServerRequestWizard
 {
@@ -36,13 +43,50 @@ class ServerRequestWizard
         $uploadedFiles ??= $_FILES;
         $parsedBody ??= $_POST;
 
-        return $this->serverRequestFactory
+        $httpProtocol = isset($serverParams['SERVER_PROTOCOL']) ? strtr($serverParams['SERVER_PROTOCOL'], 'HTTP/', '') : '1.1';
+        $headers = function_exists('getallheaders') ? getallheaders() : static::getHttpHeaders($serverParams);
+
+        $serverRequest = $this->serverRequestFactory
             ->createServerRequest(
                 method: $serverParams['REQUEST_METHOD'] ?? 'GET',
                 uri: $this->createUriFromServer($serverParams),
                 serverParams: $serverParams
-            )
+            )->withProtocolVersion($httpProtocol)
+            ->withQueryParams($queryParams)
+            ->withCookieParams($cookieParams)
         ;
+
+        foreach ($headers as $header => $value) {
+            $serverRequest = $serverRequest->withAddedHeader($header, $value);
+        }
+
+        return $serverRequest;
+    }
+
+    public static function getHttpHeaders(array $serverParams): array
+    {
+        $headers = [];
+
+        $otherHeader = [
+            'CONTENT_TYPE' => 'Content-Type',
+            'CONTENT_LENGTH' => 'Content-Length',
+            'CONTENT_MD5' => 'Content-Md5',
+        ];
+
+        foreach ($serverParams as $headerOrig => $value) {
+            if (str_starts_with($headerOrig, 'HTTP_')) {
+                $header = substr($headerOrig, 5);
+                $normalizedHeader = strtr(ucwords(strtr(strtolower($header), '_', ' ')), ' ', '-');
+
+                if (!isset($headers[$normalizedHeader])) {
+                    $headers[$normalizedHeader] = $value;
+                }
+            } elseif (isset($otherHeader[$headerOrig])) {
+                $headers[$otherHeader[$headerOrig]] = $value;
+            }
+        }
+
+        return $headers;
     }
 
     private function createUriFromServer(array $serverParams): UriInterface
