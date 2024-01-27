@@ -44,7 +44,7 @@ class ServerRequestWizard
         $uploadedFiles ??= $_FILES;
         $parsedBody ??= $_POST;
 
-        $httpProtocol = isset($serverParams['SERVER_PROTOCOL']) ? strtr($serverParams['SERVER_PROTOCOL'], 'HTTP/', '') : '1.1';
+        $httpProtocol = isset($serverParams['SERVER_PROTOCOL']) ? str_replace('HTTP/', '',  $serverParams['SERVER_PROTOCOL']) : '1.1';
         $headers = function_exists('apache_request_headers') ? apache_request_headers() : static::getHttpHeaders($serverParams);
         $requestMethod = $serverParams['REQUEST_METHOD'] ?? 'GET';
 
