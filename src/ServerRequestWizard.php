@@ -70,6 +70,7 @@ class ServerRequestWizard
         $otherHeader = [
             'CONTENT_TYPE' => 'Content-Type',
             'CONTENT_LENGTH' => 'Content-Length',
+            'CONTENT_MD5' => 'Content-MD5',
         ];
 
         foreach ($serverParams as $headerOrig => $value) {
