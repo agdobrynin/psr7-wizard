@@ -44,11 +44,11 @@ class ServerRequestWizard
         $uploadedFiles ??= $_FILES;
         $parsedBody ??= $_POST;
 
+        $requestMethod = $serverParams['REQUEST_METHOD'] ?? 'GET';
         $httpProtocol = 1 === preg_match('/(\d\.\d)$/', $serverParams['SERVER_PROTOCOL'] ?? '', $matches)
             ? $matches[0]
             : '1.1';
         $headers = function_exists('apache_request_headers') ? apache_request_headers() : static::getHttpHeaders($serverParams);
-        $requestMethod = $serverParams['REQUEST_METHOD'] ?? 'GET';
 
         $serverRequest = $this->serverRequestFactory
             ->createServerRequest(
