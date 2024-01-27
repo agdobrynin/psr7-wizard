@@ -37,7 +37,9 @@ class ServerRequestWizard
     {
         $body = (false !== ($resource = @fopen('php://input', 'rb')))
             ? $this->streamFactory->createStreamFromResource($resource)
+         // @codeCoverageIgnoreStart
             : null;
+        // @codeCoverageIgnoreEnd
 
         return $this->fromParams(
             $_SERVER,
