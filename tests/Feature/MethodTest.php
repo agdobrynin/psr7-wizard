@@ -12,7 +12,7 @@ use Kaspi\Psr7Wizard\ServerRequestWizard;
         $httpFactory,
         $httpFactory,
         $httpFactory
-    ))->fromGlobals(serverParams: $server);
+    ))->fromParams(serverParams: $server);
 
     \expect($sr->getMethod())->toBe($method);
 })->with([

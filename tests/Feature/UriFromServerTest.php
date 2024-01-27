@@ -7,17 +7,22 @@ use Kaspi\Psr7Wizard\ServerRequestWizard;
 use Psr\Http\Message\ServerRequestInterface;
 
 \test('example', function (array $server, string $expectUri) {
+    $exist = $_SERVER;
+    $_SERVER = $server;
+
     $httpFactory = new HttpFactory();
     $sr = (new ServerRequestWizard(
         $httpFactory,
         $httpFactory,
         $httpFactory,
         $httpFactory
-    ))->fromGlobals(serverParams: $server);
+    ))->fromGlobals();
 
     \expect($sr)->toBeInstanceOf(ServerRequestInterface::class)
         ->and((string) $sr->getUri())->toBe($expectUri)
     ;
+
+    $_SERVER = $exist;
 })
     ->with([
         'empty' => [

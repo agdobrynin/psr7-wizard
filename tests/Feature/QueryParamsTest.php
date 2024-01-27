@@ -6,6 +6,7 @@ use Kaspi\HttpMessage\HttpFactory;
 use Kaspi\Psr7Wizard\ServerRequestWizard;
 
 \it('Test query params', function () {
+    $exist = $_GET;
     $_GET = ['list' => 'ok', 0 => 'true', 'desc' => true];
 
     $httpFactory = new HttpFactory();
@@ -17,6 +18,7 @@ use Kaspi\Psr7Wizard\ServerRequestWizard;
     ))->fromGlobals();
 
     \expect($sr->getQueryParams())->toBe($_GET);
+    $_GET = $exist;
 })
     ->covers(ServerRequestWizard::class)
 ;

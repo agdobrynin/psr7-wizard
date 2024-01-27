@@ -16,9 +16,9 @@ use function fopen;
 use function function_exists;
 use function in_array;
 use function preg_match;
+use function str_replace;
 use function str_starts_with;
 use function strtolower;
-use function strtr;
 use function substr;
 use function ucwords;
 
@@ -31,24 +31,23 @@ class ServerRequestWizard
         private readonly UriFactoryInterface $uriFactory,
     ) {}
 
-    public function fromGlobals(
-        ?array $serverParams = null,
-        ?array $queryParams = null,
-        ?array $cookieParams = null,
-        ?array $uploadedFiles = null,
-        ?array $parsedBody = null
-    ): ServerRequestInterface {
-        $serverParams ??= $_SERVER;
-        $queryParams ??= $_GET;
-        $cookieParams ??= $_COOKIE;
-        $uploadedFiles ??= $_FILES;
-        $parsedBody ??= $_POST;
+    public function fromGlobals(): ServerRequestInterface
+    {
+        return $this->fromParams($_SERVER, $_GET, $_COOKIE, $_FILES, $_POST);
+    }
 
+    public function fromParams(
+        array $serverParams,
+        array $queryParams = [],
+        array $cookieParams = [],
+        array $files = [],
+        array $parsedBody = [],
+    ): ServerRequestInterface {
         $requestMethod = $serverParams['REQUEST_METHOD'] ?? 'GET';
         $httpProtocol = 1 === preg_match('/(\d\.\d)$/', $serverParams['SERVER_PROTOCOL'] ?? '', $matches)
             ? $matches[0]
             : '1.1';
-        $headers = function_exists('apache_request_headers') ? apache_request_headers() : static::getHttpHeaders($serverParams);
+        $headers = function_exists('apache_request_headers') ? apache_request_headers() : static::getHttpHeaders($_SERVER);
 
         $serverRequest = $this->serverRequestFactory
             ->createServerRequest(
@@ -59,16 +58,17 @@ class ServerRequestWizard
             ->withQueryParams($queryParams)
             ->withCookieParams($cookieParams)
             ->withParsedBody(!empty($parsedBody) ? $parsedBody : null)
-            ->withUploadedFiles($this->prepareUploadedFiles($uploadedFiles))
+            ->withUploadedFiles($this->prepareUploadedFiles($files))
         ;
 
         foreach ($headers as $header => $value) {
             $serverRequest = $serverRequest->withAddedHeader($header, $value);
         }
 
-        // Try open input std
         if (false !== ($resource = @fopen('php://input', 'rb'))) {
-            $serverRequest->withBody($this->streamFactory->createStreamFromResource($resource));
+            $serverRequest = $serverRequest->withBody(
+                $this->streamFactory->createStreamFromResource($resource)
+            );
         }
 
         return $serverRequest;
@@ -87,7 +87,7 @@ class ServerRequestWizard
         foreach ($serverParams as $headerOrig => $value) {
             if (str_starts_with($headerOrig, 'HTTP_')) {
                 $header = substr($headerOrig, 5);
-                $normalizedHeader = strtr(ucwords(strtr(strtolower($header), '_', ' ')), ' ', '-');
+                $normalizedHeader = str_replace(' ', '-', ucwords(str_replace('_', ' ', strtolower($header))));
 
                 if (!isset($headers[$normalizedHeader])) {
                     $headers[$normalizedHeader] = $value;
