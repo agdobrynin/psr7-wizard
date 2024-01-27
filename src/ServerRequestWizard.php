@@ -12,6 +12,7 @@ use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
 
 use function apache_request_headers;
+use function fopen;
 use function function_exists;
 use function in_array;
 use function preg_match;
@@ -31,11 +32,11 @@ class ServerRequestWizard
     ) {}
 
     public function fromGlobals(
-        array $serverParams = null,
-        array $queryParams = null,
-        array $cookieParams = null,
-        array $uploadedFiles = null,
-        array $parsedBody = null
+        ?array $serverParams = null,
+        ?array $queryParams = null,
+        ?array $cookieParams = null,
+        ?array $uploadedFiles = null,
+        ?array $parsedBody = null
     ): ServerRequestInterface {
         $serverParams ??= $_SERVER;
         $queryParams ??= $_GET;
@@ -45,19 +46,27 @@ class ServerRequestWizard
 
         $httpProtocol = isset($serverParams['SERVER_PROTOCOL']) ? strtr($serverParams['SERVER_PROTOCOL'], 'HTTP/', '') : '1.1';
         $headers = function_exists('apache_request_headers') ? apache_request_headers() : static::getHttpHeaders($serverParams);
+        $requestMethod = $serverParams['REQUEST_METHOD'] ?? 'GET';
 
         $serverRequest = $this->serverRequestFactory
             ->createServerRequest(
-                method: $serverParams['REQUEST_METHOD'] ?? 'GET',
+                method: $requestMethod,
                 uri: $this->createUriFromServer($serverParams),
                 serverParams: $serverParams
             )->withProtocolVersion($httpProtocol)
             ->withQueryParams($queryParams)
             ->withCookieParams($cookieParams)
+            ->withParsedBody(!empty($parsedBody) ? $parsedBody : null)
+            ->withUploadedFiles($this->prepareUploadedFiles($uploadedFiles))
         ;
 
         foreach ($headers as $header => $value) {
             $serverRequest = $serverRequest->withAddedHeader($header, $value);
+        }
+
+        // Try open input std
+        if (false !== ($resource = @fopen('php://input', 'rb'))) {
+            $serverRequest->withBody($this->streamFactory->createStreamFromResource($resource));
         }
 
         return $serverRequest;
@@ -122,5 +131,10 @@ class ServerRequestWizard
         $uriString = $scheme.'://'.$host.($requestUri ?? '');
 
         return $this->uriFactory->createUri($uriString);
+    }
+
+    private function prepareUploadedFiles(array $files): array
+    {
+        return [];
     }
 }
