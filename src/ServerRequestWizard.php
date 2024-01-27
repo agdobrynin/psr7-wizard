@@ -7,6 +7,7 @@ namespace Kaspi\Psr7Wizard;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
@@ -15,6 +16,7 @@ use function apache_request_headers;
 use function fopen;
 use function function_exists;
 use function in_array;
+use function is_string;
 use function preg_match;
 use function str_replace;
 use function str_starts_with;
@@ -33,7 +35,18 @@ class ServerRequestWizard
 
     public function fromGlobals(): ServerRequestInterface
     {
-        return $this->fromParams($_SERVER, $_GET, $_COOKIE, $_FILES, $_POST);
+        $body = (false !== ($resource = @fopen('php://input', 'rb')))
+            ? $this->streamFactory->createStreamFromResource($resource)
+            : null;
+
+        return $this->fromParams(
+            $_SERVER,
+            $_GET,
+            $_COOKIE,
+            $_FILES,
+            $_POST,
+            $body
+        );
     }
 
     public function fromParams(
@@ -41,7 +54,8 @@ class ServerRequestWizard
         array $queryParams = [],
         array $cookieParams = [],
         array $files = [],
-        array $parsedBody = [],
+        array $post = [],
+        StreamInterface|string $body = null,
     ): ServerRequestInterface {
         $requestMethod = $serverParams['REQUEST_METHOD'] ?? 'GET';
         $httpProtocol = 1 === preg_match('/(\d\.\d)$/', $serverParams['SERVER_PROTOCOL'] ?? '', $matches)
@@ -57,7 +71,7 @@ class ServerRequestWizard
             )->withProtocolVersion($httpProtocol)
             ->withQueryParams($queryParams)
             ->withCookieParams($cookieParams)
-            ->withParsedBody(!empty($parsedBody) ? $parsedBody : null)
+            ->withParsedBody(!empty($post) ? $post : null)
             ->withUploadedFiles($this->prepareUploadedFiles($files))
         ;
 
@@ -65,13 +79,15 @@ class ServerRequestWizard
             $serverRequest = $serverRequest->withAddedHeader($header, $value);
         }
 
-        if (false !== ($resource = @fopen('php://input', 'rb'))) {
-            $serverRequest = $serverRequest->withBody(
-                $this->streamFactory->createStreamFromResource($resource)
-            );
+        if (null === $body) {
+            return $serverRequest;
         }
 
-        return $serverRequest;
+        return $serverRequest->withBody(
+            is_string($body)
+                ? $this->streamFactory->createStream($body)
+                : $body
+        );
     }
 
     public static function getHttpHeaders(array $serverParams): array
