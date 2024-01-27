@@ -11,8 +11,8 @@ use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
 
+use function apache_request_headers;
 use function function_exists;
-use function getallheaders;
 use function in_array;
 use function preg_match;
 use function str_starts_with;
@@ -44,7 +44,7 @@ class ServerRequestWizard
         $parsedBody ??= $_POST;
 
         $httpProtocol = isset($serverParams['SERVER_PROTOCOL']) ? strtr($serverParams['SERVER_PROTOCOL'], 'HTTP/', '') : '1.1';
-        $headers = function_exists('getallheaders') ? getallheaders() : static::getHttpHeaders($serverParams);
+        $headers = function_exists('apache_request_headers') ? apache_request_headers() : static::getHttpHeaders($serverParams);
 
         $serverRequest = $this->serverRequestFactory
             ->createServerRequest(
@@ -70,7 +70,6 @@ class ServerRequestWizard
         $otherHeader = [
             'CONTENT_TYPE' => 'Content-Type',
             'CONTENT_LENGTH' => 'Content-Length',
-            'CONTENT_MD5' => 'Content-Md5',
         ];
 
         foreach ($serverParams as $headerOrig => $value) {
