@@ -4,18 +4,21 @@ declare(strict_types=1);
 
 namespace Kaspi\Psr7Wizard;
 
+use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileFactoryInterface;
+use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
-
+use RuntimeException;
 use function apache_request_headers;
 use function fopen;
 use function function_exists;
 use function in_array;
+use function is_array;
 use function is_string;
 use function preg_match;
 use function str_replace;
@@ -155,6 +158,65 @@ class ServerRequestWizard
 
     private function prepareUploadedFiles(array $files): array
     {
-        return [];
+        if (null === ($field = array_key_first($files))) {
+            return [];
+        }
+
+        if ([] !== array_diff_key(array_keys($files[$field]), ['tmp_name', 'error'])) {
+            throw new InvalidArgumentException(
+                "Parameter \$files must be provide keys \"tmp_name\", \"error\" in \"{$field}\" field"
+            );
+        }
+
+        $createUploadedFileItem = function (string $tmpName, int $error, ?string $name, ?int $size, ?string $type): UploadedFileInterface {
+            if (UPLOAD_ERR_OK !== $error) {
+                $stream = $this->streamFactory->createStream();
+            } else {
+                try {
+                    $stream = $this->streamFactory->createStreamFromFile($tmpName);
+                } catch (RuntimeException) {
+                    $stream = $this->streamFactory->createStream();
+                }
+            }
+
+            return $this->uploadedFileFactory->createUploadedFile($stream, $size, $error, $name, $type);
+        };
+
+        $rebuildTree = static function (
+            array $tmpNamesTree,
+            array $errorsTree,
+            array $namesTree,
+            array $sizesTree,
+            array $typesTree,
+        ) use (&$rebuildTree, $createUploadedFileItem) {
+            $rebuild = [];
+
+            foreach ($tmpNamesTree as $key => $value) {
+                if (is_string($value)) {
+                    $rebuild[$key] = $createUploadedFileItem(
+                        $value, $errorsTree[$key], $namesTree[$key] ?? null, $sizesTree[$key] ?? null, $typesTree[$key] ?? null);
+                } elseif (is_array($value)) {
+                    $rebuild[$key] = $rebuildTree(
+                        $value,
+                        $errorsTree[$key],
+                        $namesTree[$key] ?? null,
+                        $sizesTree[$key] ?? null,
+                        $typesTree[$key] ?? null,
+                    );
+                }
+            }
+
+            return $rebuild;
+        };
+
+        $uploadedFiles = [];
+
+        foreach ($files as $key => $value) {
+            if (is_array($value) && is_array($value['tmp_name'])) {
+                $uploadedFiles
+            }
+        }
+
+        return $uploadedFiles;
     }
 }
