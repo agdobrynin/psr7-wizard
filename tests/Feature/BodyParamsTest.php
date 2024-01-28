@@ -3,35 +3,34 @@
 declare(strict_types=1);
 
 use Kaspi\HttpMessage\HttpFactory;
-use Kaspi\HttpMessage\Stream\PhpTempStream;
 use Kaspi\Psr7Wizard\ServerRequestWizard;
 
-\it('Test Body by params ', function (PhpTempStream|string $body, $expect) {
-    $httpFactory = new HttpFactory();
+\describe('Test Body by params', function () {
+    \it('with string ', function () {
+        $httpFactory = new HttpFactory();
 
-    $sr = (new ServerRequestWizard(
-        $httpFactory,
-        $httpFactory,
-        $httpFactory,
-        $httpFactory
-    ))->fromParams(serverParams: [], body: $body);
+        $sr = (new ServerRequestWizard(
+            $httpFactory,
+            $httpFactory,
+            $httpFactory,
+            $httpFactory
+        ))->fromParams(serverParams: [], body: 'Hello world 😎');
 
-    \expect((string) $sr->getBody())->toBe($expect);
+        \expect((string) $sr->getBody())->toBe('Hello world 😎');
+    });
+
+    \it('with StreamInterface', function () {
+        $httpFactory = new HttpFactory();
+
+        $sr = (new ServerRequestWizard(
+            $httpFactory,
+            $httpFactory,
+            $httpFactory,
+            $httpFactory
+        ))->fromParams(serverParams: [], body: $httpFactory->createStream('🎨 Hello world'));
+
+        \expect((string) $sr->getBody())->toBe('🎨 Hello world');
+    });
 })
-    ->with([
-        'from string' => [
-            'body' => static fn () => 'Hello world 😎',
-            'expect' => 'Hello world 😎',
-        ],
-        'from Stream' => [
-            'body' => static function () {
-                $s = new PhpTempStream();
-                $s->write('😋!');
-
-                return $s;
-            },
-            'expect' => '😋!',
-        ],
-    ])
     ->covers(ServerRequestWizard::class)
 ;
