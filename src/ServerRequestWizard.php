@@ -14,7 +14,9 @@ use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
 use RuntimeException;
+
 use function apache_request_headers;
+use function array_key_first;
 use function fopen;
 use function function_exists;
 use function in_array;
@@ -162,9 +164,9 @@ class ServerRequestWizard
             return [];
         }
 
-        if ([] !== array_diff_key(array_keys($files[$field]), ['tmp_name', 'error'])) {
+        if (!isset($files[$field]['tmp_name'], $files[$field]['error'])) {
             throw new InvalidArgumentException(
-                "Parameter \$files must be provide keys \"tmp_name\", \"error\" in \"{$field}\" field"
+                __FUNCTION__." : parameter \$files must be provide keys \"tmp_name\", \"error\" in \"{$field}\" field"
             );
         }
 
@@ -185,16 +187,21 @@ class ServerRequestWizard
         $rebuildTree = static function (
             array $tmpNamesTree,
             array $errorsTree,
-            array $namesTree,
-            array $sizesTree,
-            array $typesTree,
+            ?array $namesTree,
+            ?array $sizesTree,
+            ?array $typesTree,
         ) use (&$rebuildTree, $createUploadedFileItem) {
             $rebuild = [];
 
             foreach ($tmpNamesTree as $key => $value) {
                 if (is_string($value)) {
                     $rebuild[$key] = $createUploadedFileItem(
-                        $value, $errorsTree[$key], $namesTree[$key] ?? null, $sizesTree[$key] ?? null, $typesTree[$key] ?? null);
+                        $value,
+                        $errorsTree[$key],
+                        $namesTree[$key] ?? null,
+                        $sizesTree[$key] ?? null,
+                        $typesTree[$key] ?? null
+                    );
                 } elseif (is_array($value)) {
                     $rebuild[$key] = $rebuildTree(
                         $value,
@@ -213,7 +220,9 @@ class ServerRequestWizard
 
         foreach ($files as $key => $value) {
             if (is_array($value) && is_array($value['tmp_name'])) {
-                $uploadedFiles
+                $uploadedFiles[$key] = $rebuildTree($value['tmp_name'], $value['error'], $value['name'] ?? null, $value['size'] ?? null, $value['type'] ?? null);
+            } elseif (is_string($value['tmp_name'])) {
+                $uploadedFiles[$key] = $createUploadedFileItem($value['tmp_name'], $value['error'], $value['name'] ?? null, $value['size'] ?? null, $value['type'] ?? null);
             }
         }
 
