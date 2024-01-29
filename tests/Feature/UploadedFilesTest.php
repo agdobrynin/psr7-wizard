@@ -145,6 +145,12 @@ use Psr\Http\Message\UploadedFileInterface;
                 'tmp_name' => 'vfs://root/phpPonUpg',
                 'error' => 0,
             ],
+            'image' => [
+                'name' => '',
+                'type' => '',
+                'tmp_name' => '',
+                'error' => 4,
+            ],
         ];
 
         /** @var ServerRequestInterface $sr */
@@ -164,12 +170,24 @@ use Psr\Http\Message\UploadedFileInterface;
             ->and((string) $notes[2]->getStream())->toBe('🎈')
             ->and($notes[2]->getSize())->toBe(4)
         ;
+
         // resume as one file
         /** @var UploadedFileInterface $resume */
         $resume = $sr->getUploadedFiles()['resume'];
 
         \expect((string) $resume->getStream())->toBe('I am tester')
+            ->and($resume->getError())->toBe(UPLOAD_ERR_OK)
             ->and($resume->getClientFilename())->toBe('resume.txt')
-            ->and($resume->getClientMediaType())->toBe('application/msword');
+            ->and($resume->getClientMediaType())->toBe('application/msword')
+        ;
+
+        // image file not loaded
+        /** @var UploadedFileInterface $image */
+        $image = $sr->getUploadedFiles()['image'];
+
+        \expect($image->getError())->toBe(UPLOAD_ERR_NO_FILE)
+            ->and($image->getSize())->toBe(0)
+            ->and($image->getClientFilename())->toBe('')
+        ;
     });
 })->covers(ServerRequestWizard::class);

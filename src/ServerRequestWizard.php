@@ -160,17 +160,17 @@ class ServerRequestWizard
 
     private function prepareUploadedFiles(array $files): array
     {
-        if (null === ($field = array_key_first($files))) {
+        if ([] === $files) {
             return [];
         }
 
-        if (!isset($files[$field]['tmp_name'], $files[$field]['error'])) {
-            throw new InvalidArgumentException(
-                __FUNCTION__." : parameter \$files must be provide keys \"tmp_name\", \"error\" in \"{$field}\" field"
-            );
-        }
-
-        $createUploadedFileItem = function (string $tmpName, int $error, ?string $name, ?int $size, ?string $type): UploadedFileInterface {
+        $createUploadedFileItem = function (
+            string $tmpName,
+            int $error,
+            ?string $name,
+            ?int $size,
+            ?string $type
+        ): UploadedFileInterface {
             if (UPLOAD_ERR_OK !== $error) {
                 $stream = $this->streamFactory->createStream();
             } else {
