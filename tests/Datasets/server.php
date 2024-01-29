@@ -26,6 +26,11 @@ $simpleServerParams = [
     'HTTP_ACCEPT_LANGUAGE' => 'ru,ru-RU;q=0.9,en-US;q=0.8,en;q=0.7,de;q=0.6,it;q=0.5',
     'REQUEST_TIME_FLOAT' => 1706209958.31321,
     'REQUEST_TIME' => 1706209958,
+    'CONTENT_LENGTH' => '363715',
+    'HTTP_CONTENT_LENGTH' => '363715',
+    'HTTP_ORIGIN' => 'http://127.0.0.1:8080',
+    'CONTENT_TYPE' => 'multipart/form-data; boundary=----WebKitFormBoundaryIRB3O6SZxfL5m4Lt',
+    'HTTP_CONTENT_TYPE' => 'multipart/form-data; boundary=----WebKitFormBoundaryIRB3O6SZxfL5m4Lt',
 ];
 
 \dataset('server_request', [
