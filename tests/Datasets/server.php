@@ -31,6 +31,9 @@ $simpleServerParams = [
     'HTTP_ORIGIN' => 'http://127.0.0.1:8080',
     'CONTENT_TYPE' => 'multipart/form-data; boundary=----WebKitFormBoundaryIRB3O6SZxfL5m4Lt',
     'HTTP_CONTENT_TYPE' => 'multipart/form-data; boundary=----WebKitFormBoundaryIRB3O6SZxfL5m4Lt',
+    'HTTP_0' => 'zero header',
+    'HTTP_1234' => 'numeric header',
+    'REDIRECT_HTTP_AUTHORIZATION' => 'Bearer myBigKey',
 ];
 
 \dataset('server_request', [

@@ -16,10 +16,12 @@ use Psr\Http\Message\UriInterface;
 use RuntimeException;
 
 use function apache_request_headers;
+use function base64_encode;
 use function fopen;
 use function function_exists;
 use function in_array;
 use function is_array;
+use function is_int;
 use function is_string;
 use function preg_match;
 use function str_replace;
@@ -67,7 +69,7 @@ class ServerRequestWizard
         $httpProtocol = 1 === preg_match('/(\d\.\d)$/', $serverParams['SERVER_PROTOCOL'] ?? '', $matches)
             ? $matches[0]
             : '1.1';
-        $headers = function_exists('apache_request_headers') ? apache_request_headers() : static::getHttpHeaders($_SERVER);
+        $headers = function_exists('apache_request_headers') ? apache_request_headers() : static::getHttpHeaders($serverParams);
 
         $serverRequest = $this->serverRequestFactory
             ->createServerRequest(
@@ -82,7 +84,10 @@ class ServerRequestWizard
         ;
 
         foreach ($headers as $header => $value) {
-            $serverRequest = $serverRequest->withAddedHeader($header, $value);
+            $serverRequest = $serverRequest->withAddedHeader(
+                is_int($header) ? (string) $header : $header,
+                $value
+            );
         }
 
         if (null === $body) {
@@ -116,6 +121,17 @@ class ServerRequestWizard
                 }
             } elseif (isset($otherHeader[$headerOrig])) {
                 $headers[$otherHeader[$headerOrig]] = $value;
+            }
+        }
+
+        // Authorization
+        if (!isset($headers['Authorization'])) {
+            if (null !== ($authorization = $serverParams['REDIRECT_HTTP_AUTHORIZATION'] ?? null)) {
+                $headers['Authorization'] = $authorization;
+            } elseif (null !== ($user = $_SERVER['PHP_AUTH_USER'] ?? null)) {
+                $headers['Authorization'] = 'Basic '.base64_encode($user.':'.$_SERVER['PHP_AUTH_PW'] ?? '');
+            } elseif (null !== ($authorization = $_SERVER['PHP_AUTH_DIGEST'] ?? null)) {
+                $headers['Authorization'] = $authorization;
             }
         }
 
