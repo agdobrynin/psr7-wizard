@@ -193,6 +193,12 @@ class ServerRequestWizard
             $rebuild = [];
 
             foreach ($tmpNamesTree as $key => $value) {
+                if (!isset($errorsTree[$key])) {
+                    throw new InvalidArgumentException(
+                        "Uploaded file \"{$value}\" must be provide \"error\" key"
+                    );
+                }
+
                 if (is_string($value)) {
                     $rebuild[$key] = $createUploadedFileItem(
                         [
@@ -236,6 +242,8 @@ class ServerRequestWizard
                 );
             } elseif (is_string($value['tmp_name'])) {
                 $uploadedFiles[$key] = $createUploadedFileItem($value);
+            } else {
+                throw new InvalidArgumentException('Wrong structure for uploaded files');
             }
         }
 

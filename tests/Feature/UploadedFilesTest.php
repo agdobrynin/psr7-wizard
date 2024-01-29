@@ -98,6 +98,7 @@ use Psr\Http\Message\UploadedFileInterface;
             'phpV2pBil' => 'Content file 2',
             'php8RUG8v' => '🎈',
             'phpPonUpg' => 'I am tester',
+            'phpwkiI9l' => \file_get_contents(__DIR__.'/../Fixtures/clip-icon.svg'),
         ]);
 
         $files = [
@@ -109,6 +110,7 @@ use Psr\Http\Message\UploadedFileInterface;
                             1 => 'note-second.txt',
                             2 => 'note.txt',
                         ],
+                        0 => 'clip.svg',
                     ],
                 ],
                 'type' => [
@@ -118,6 +120,7 @@ use Psr\Http\Message\UploadedFileInterface;
                             1 => 'plain/text',
                             2 => 'plain/text',
                         ],
+                        0 => 'image/svg+xml',
                     ],
                 ],
                 'tmp_name' => [
@@ -127,6 +130,7 @@ use Psr\Http\Message\UploadedFileInterface;
                             1 => 'vfs://root/phpV2pBil',
                             2 => 'vfs://root/php8RUG8v',
                         ],
+                        0 => 'vfs://root/phpwkiI9l',
                     ],
                 ],
                 'error' => [
@@ -136,6 +140,7 @@ use Psr\Http\Message\UploadedFileInterface;
                             1 => 0,
                             2 => 0,
                         ],
+                        0 => 0,
                     ],
                 ],
             ],
@@ -169,6 +174,14 @@ use Psr\Http\Message\UploadedFileInterface;
         // file 3
             ->and((string) $notes[2]->getStream())->toBe('🎈')
             ->and($notes[2]->getSize())->toBe(4)
+        ;
+
+        // File in my-form.details array
+        /** @var UploadedFileInterface $details */
+        $details = $sr->getUploadedFiles()['my-form']['details'][0];
+        \expect($details->getClientMediaType())->toBe('image/svg+xml')
+            ->and((string) $details->getStream())->toStartWith('<?xml version="1.0" encoding="utf-8"')
+            ->and($details->getSize())->toBe(\filesize(__DIR__.'/../Fixtures/clip-icon.svg'))
         ;
 
         // resume as one file
