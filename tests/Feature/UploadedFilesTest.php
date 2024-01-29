@@ -203,4 +203,104 @@ use Psr\Http\Message\UploadedFileInterface;
             ->and($image->getClientFilename())->toBe('')
         ;
     });
+
+    \it('cannot create stream from uploaded file', function () {
+        \set_error_handler(static fn () => false);
+
+        $files = [
+            'docs' => [
+                'tmp_name' => '/tmp/'.\uniqid('fix', true),
+                'name' => 'my-document.txt',
+                'size' => 19,
+                'type' => 'plain/text',
+                'error' => 0,
+            ],
+        ];
+
+        /** @var ServerRequestInterface $sr */
+        $sr = $this->serverRequestWizard->fromParams([], files: $files);
+
+        /** @var UploadedFileInterface $docs */
+        $docs = $sr->getUploadedFiles()['docs'];
+
+        \expect($docs->getStream()->getSize())->toBe(0)
+            ->and((string) $docs->getStream())->toBe('')
+        ;
+
+        \restore_error_handler();
+    });
+
+    \it('wrong structure for uploaded file', function ($files) {
+        \set_error_handler(static fn () => false);
+
+        /** @var ServerRequestInterface $sr */
+        $sr = $this->serverRequestWizard->fromParams([], files: $files);
+    })
+        ->throws(InvalidArgumentException::class)
+        ->with([
+            'one file without tmp_name key' => [
+                'files' => [
+                    'docs' => [
+                        'name' => 'my-document.txt',
+                        'error' => 0,
+                    ],
+                ],
+            ],
+            'one file without error key' => [
+                'files' => [
+                    'docs' => [
+                        'name' => 'my-document.txt',
+                        'tmp_name' => '/aaaa.txt',
+                    ],
+                ],
+            ],
+            'wrong structure of files' => [
+                'files' => [
+                    'my-form' => [
+                        'name' => 'file1.txt',
+                        'tmp_name' => (object) [],
+                        'error' => 0,
+                    ],
+                ],
+            ],
+            'many files without error key' => [
+                'files' => [
+                    'my-form' => [
+                        'name' => [
+                            'details' => [
+                                'notes' => [
+                                    0 => 'note-first.txt',
+                                ],
+                                0 => 'clip.svg',
+                            ],
+                        ],
+                        'type' => [
+                            'details' => [
+                                'notes' => [
+                                    0 => 'plain/text',
+                                ],
+                                0 => 'image/svg+xml',
+                            ],
+                        ],
+                        'tmp_name' => [
+                            'details' => [
+                                'notes' => [
+                                    0 => '/tmp/phpmFLrzD'.\uniqid('test', true),
+                                ],
+                                0 => '/tmp/phpmMmTeW'.\uniqid('test', true),
+                            ],
+                        ],
+                        'error' => [
+                            'details' => [
+                                'notes' => [
+                                    0 => 0,
+                                ],
+                                // Error key for field my-form[details][0] must be here
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ])
+    ;
 })->covers(ServerRequestWizard::class);
