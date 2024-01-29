@@ -16,7 +16,6 @@ use Psr\Http\Message\UriInterface;
 use RuntimeException;
 
 use function apache_request_headers;
-use function array_key_first;
 use function fopen;
 use function function_exists;
 use function in_array;
@@ -164,24 +163,24 @@ class ServerRequestWizard
             return [];
         }
 
-        $createUploadedFileItem = function (
-            string $tmpName,
-            int $error,
-            ?string $name,
-            ?int $size,
-            ?string $type
-        ): UploadedFileInterface {
-            if (UPLOAD_ERR_OK !== $error) {
+        $createUploadedFileItem = function (array $fileItem): UploadedFileInterface {
+            if (UPLOAD_ERR_OK !== $fileItem['error']) {
                 $stream = $this->streamFactory->createStream();
             } else {
                 try {
-                    $stream = $this->streamFactory->createStreamFromFile($tmpName);
+                    $stream = $this->streamFactory->createStreamFromFile($fileItem['tmp_name']);
                 } catch (RuntimeException) {
                     $stream = $this->streamFactory->createStream();
                 }
             }
 
-            return $this->uploadedFileFactory->createUploadedFile($stream, $size, $error, $name, $type);
+            return $this->uploadedFileFactory->createUploadedFile(
+                $stream,
+                $fileItem['size'] ?? null,
+                $fileItem['error'],
+                $fileItem['name'] ?? null,
+                $fileItem['type'] ?? null
+            );
         };
 
         $rebuildTree = static function (
@@ -196,11 +195,13 @@ class ServerRequestWizard
             foreach ($tmpNamesTree as $key => $value) {
                 if (is_string($value)) {
                     $rebuild[$key] = $createUploadedFileItem(
-                        $value,
-                        $errorsTree[$key],
-                        $namesTree[$key] ?? null,
-                        $sizesTree[$key] ?? null,
-                        $typesTree[$key] ?? null
+                        [
+                            'tmp_name' => $value,
+                            'error' => $errorsTree[$key],
+                            'name' => $namesTree[$key] ?? null,
+                            'size' => $sizesTree[$key] ?? null,
+                            'type' => $typesTree[$key] ?? null,
+                        ]
                     );
                 } elseif (is_array($value)) {
                     $rebuild[$key] = $rebuildTree(
@@ -219,10 +220,22 @@ class ServerRequestWizard
         $uploadedFiles = [];
 
         foreach ($files as $key => $value) {
+            if (!isset($value['tmp_name'], $value['error'])) {
+                throw new InvalidArgumentException(
+                    __FUNCTION__." : parameter \$files must be provide keys \"tmp_name\", \"error\" in \"{$key}\" field"
+                );
+            }
+
             if (is_array($value) && is_array($value['tmp_name'])) {
-                $uploadedFiles[$key] = $rebuildTree($value['tmp_name'], $value['error'], $value['name'] ?? null, $value['size'] ?? null, $value['type'] ?? null);
+                $uploadedFiles[$key] = $rebuildTree(
+                    $value['tmp_name'],
+                    $value['error'],
+                    $value['name'] ?? null,
+                    $value['size'] ?? null,
+                    $value['type'] ?? null
+                );
             } elseif (is_string($value['tmp_name'])) {
-                $uploadedFiles[$key] = $createUploadedFileItem($value['tmp_name'], $value['error'], $value['name'] ?? null, $value['size'] ?? null, $value['type'] ?? null);
+                $uploadedFiles[$key] = $createUploadedFileItem($value);
             }
         }
 
