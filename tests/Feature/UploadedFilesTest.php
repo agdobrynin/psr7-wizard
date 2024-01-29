@@ -101,12 +101,6 @@ use Psr\Http\Message\UploadedFileInterface;
         ]);
 
         $files = [
-            'resume' => [
-                'name' => 'resume.txt',
-                'type' => 'application/msword',
-                'tmp_name' => 'vfs://root/phpPonUpg',
-                'error' => 0,
-            ],
             'my-form' => [
                 'name' => [
                     'details' => [
@@ -144,6 +138,12 @@ use Psr\Http\Message\UploadedFileInterface;
                         ],
                     ],
                 ],
+            ],
+            'resume' => [
+                'name' => 'resume.txt',
+                'type' => 'application/msword',
+                'tmp_name' => 'vfs://root/phpPonUpg',
+                'error' => 0,
             ],
         ];
 
