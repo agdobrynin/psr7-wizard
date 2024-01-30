@@ -245,7 +245,7 @@ final class ServerRequestWizard implements ServerRequestWizardInterface
             if (!($value instanceof UploadedFileInterface)
                 && !isset($value['tmp_name'], $value['error'])) {
                 throw new InvalidArgumentException(
-                    __FUNCTION__.' : Items in parameter $files must be provide keys "tmp_name", "error" in "'.$key.'" field. '.
+                    __FUNCTION__.' : Items in parameter $files must be provide keys "tmp_name", "error" in "'.$key.'" field '.
                     'or item must be '.UploadedFileInterface::class
                 );
             }
