@@ -10,12 +10,12 @@ use Psr\Http\Message\UploadedFileInterface;
 
 \describe('Test for uploaded files', function () {
     \beforeEach(function () {
-        $httpFactory = new HttpFactory();
+        $this->httpFactory = new HttpFactory();
         $this->serverRequestWizard = new ServerRequestWizard(
-            $httpFactory,
-            $httpFactory,
-            $httpFactory,
-            $httpFactory
+            $this->httpFactory,
+            $this->httpFactory,
+            $this->httpFactory,
+            $this->httpFactory
         );
     });
 
@@ -303,4 +303,21 @@ use Psr\Http\Message\UploadedFileInterface;
             ],
         ])
     ;
+
+    \it('add files with UploadedFileInterface', function () {
+        $root = vfsStream::setup();
+        $files = [
+            $this->httpFactory->createUploadedFile(
+                stream: $this->httpFactory->createStreamFromFile(vfsStream::newFile('1')->at($root)->url())
+            ),
+            $this->httpFactory->createUploadedFile(
+                stream: $this->httpFactory->createStreamFromFile(vfsStream::newFile('2')->at($root)->url())
+            ),
+        ];
+
+        /** @var ServerRequestInterface $sr */
+        $sr = $this->serverRequestWizard->fromParams([], files: $files);
+
+        \expect($sr->getUploadedFiles())->toBe($files);
+    });
 })->covers(ServerRequestWizard::class);

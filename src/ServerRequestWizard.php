@@ -242,13 +242,16 @@ final class ServerRequestWizard implements ServerRequestWizardInterface
         $uploadedFiles = [];
 
         foreach ($files as $key => $value) {
-            if (!isset($value['tmp_name'], $value['error'])) {
+            if (!($value instanceof UploadedFileInterface)
+                && !isset($value['tmp_name'], $value['error'])) {
                 throw new InvalidArgumentException(
                     __FUNCTION__." : parameter \$files must be provide keys \"tmp_name\", \"error\" in \"{$key}\" field"
                 );
             }
 
-            if (is_array($value) && is_array($value['tmp_name'])) {
+            if ($value instanceof UploadedFileInterface) {
+                $uploadedFiles[$key] = $value;
+            } elseif (is_array($value) && is_array($value['tmp_name'])) {
                 $uploadedFiles[$key] = $rebuildTree(
                     $value['tmp_name'],
                     $value['error'],
