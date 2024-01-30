@@ -1,4 +1,6 @@
-# 🧙🏻‍♂️ Building ServerRequest class which implement PSR-7 ServerRequestInterface from global PHP variables.
+# 🧙🏻‍♂️ psr7-wizard
+
+Building ServerRequest class which implement PSR-7 ServerRequestInterface from global PHP variables.
 
 Require PHP 8.1 or newest.
 
