@@ -30,7 +30,7 @@ use function strtolower;
 use function substr;
 use function ucwords;
 
-class ServerRequestWizard
+final class ServerRequestWizard implements ServerRequestWizardInterface
 {
     public function __construct(
         private readonly ServerRequestFactoryInterface $serverRequestFactory,
@@ -69,7 +69,7 @@ class ServerRequestWizard
         $httpProtocol = 1 === preg_match('/(\d\.\d)$/', $serverParams['SERVER_PROTOCOL'] ?? '', $matches)
             ? $matches[0]
             : '1.1';
-        $headers = function_exists('apache_request_headers') ? apache_request_headers() : static::getHttpHeaders($serverParams);
+        $headers = function_exists('apache_request_headers') ? apache_request_headers() : self::getHttpHeaders($serverParams);
 
         $serverRequest = $this->serverRequestFactory
             ->createServerRequest(
