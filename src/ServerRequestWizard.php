@@ -128,9 +128,9 @@ class ServerRequestWizard
         if (!isset($headers['Authorization'])) {
             if (null !== ($authorization = $serverParams['REDIRECT_HTTP_AUTHORIZATION'] ?? null)) {
                 $headers['Authorization'] = $authorization;
-            } elseif (null !== ($user = $_SERVER['PHP_AUTH_USER'] ?? null)) {
-                $headers['Authorization'] = 'Basic '.base64_encode($user.':'.$_SERVER['PHP_AUTH_PW'] ?? '');
-            } elseif (null !== ($authorization = $_SERVER['PHP_AUTH_DIGEST'] ?? null)) {
+            } elseif (null !== ($user = $serverParams['PHP_AUTH_USER'] ?? null)) {
+                $headers['Authorization'] = 'Basic '.base64_encode($user.':'.$serverParams['PHP_AUTH_PW'] ?? '');
+            } elseif (null !== ($authorization = $serverParams['PHP_AUTH_DIGEST'] ?? null)) {
                 $headers['Authorization'] = $authorization;
             }
         }

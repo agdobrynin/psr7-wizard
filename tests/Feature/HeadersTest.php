@@ -30,13 +30,7 @@ use Kaspi\Psr7Wizard\ServerRequestWizard;
         'HTTP_ACCEPT_LANGUAGE' => 'ru,ru-RU;q=0.9,en-US;q=0.8,en;q=0.7,de;q=0.6,it;q=0.5',
         'REQUEST_TIME_FLOAT' => 1706209958.31321,
         'REQUEST_TIME' => 1706209958,
-        'CONTENT_LENGTH' => '363715',
-        'HTTP_CONTENT_LENGTH' => '363715',
         'HTTP_ORIGIN' => 'http://127.0.0.1:8080',
-        'CONTENT_TYPE' => 'multipart/form-data; boundary=----WebKitFormBoundaryIRB3O6SZxfL5m4Lt',
-        'HTTP_CONTENT_TYPE' => 'multipart/form-data; boundary=----WebKitFormBoundaryIRB3O6SZxfL5m4Lt',
-        'HTTP_0' => 'zero header',
-        'HTTP_1234' => 'numeric header',
     ];
 
     \it('content type convert', function ($server, $expect) {
@@ -47,11 +41,60 @@ use Kaspi\Psr7Wizard\ServerRequestWizard;
             $httpFactory,
             $httpFactory
         ))->fromParams($server);
+
+        \expect(\array_intersect_key($sr->getHeaders(), $expect))
+            ->toBe($expect)
+        ;
     })
         ->with([
             'content type test' => [
-                'server' => $simpleServerParams,
-                'expect' => ['content-length', 'content-type'],
+                'server' => \array_merge(
+                    $simpleServerParams,
+                    [
+                        'CONTENT_LENGTH' => '363715',
+                        'HTTP_CONTENT_LENGTH' => '363715',
+                        'CONTENT_TYPE' => 'multipart/form-data; boundary=----WebKitFormBoundaryIRB3O6SZxfL5m4Lt',
+                        'HTTP_CONTENT_TYPE' => 'multipart/form-data; boundary=----WebKitFormBoundaryIRB3O6SZxfL5m4Lt',
+                    ]
+                ),
+                'expect' => [
+                    'Content-Length' => ['363715'],
+                    'Content-Type' => ['multipart/form-data; boundary=----WebKitFormBoundaryIRB3O6SZxfL5m4Lt'],
+                ],
+            ],
+            'headers with numeric' => [
+                'server' => \array_merge(
+                    $simpleServerParams,
+                    [
+                        'HTTP_0' => 'zero header',
+                        'HTTP_1234' => 'numeric header',
+                    ]
+                ),
+                'expect' => [
+                    '0' => ['zero header'],
+                    '1234' => ['numeric header'],
+                ],
+            ],
+            'authorization header' => [
+                'server' => \array_merge(
+                    $simpleServerParams,
+                    ['REDIRECT_HTTP_AUTHORIZATION' => 'auth-token']
+                ),
+                'expect' => ['Authorization' => ['auth-token']],
+            ],
+            'authorization header php_auth_digest' => [
+                'server' => \array_merge(
+                    $simpleServerParams,
+                    ['PHP_AUTH_DIGEST' => 'value']
+                ),
+                'expect' => ['Authorization' => ['value']],
+            ],
+            'authorization php_auth_user' => [
+                'server' => \array_merge(
+                    $simpleServerParams,
+                    ['PHP_AUTH_USER' => 'admin', 'PHP_AUTH_PW' => 'pass']
+                ),
+                'expect' => ['Authorization' => ['Basic '.\base64_encode('admin:pass')]],
             ],
         ])
     ;
