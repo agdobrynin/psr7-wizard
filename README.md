@@ -19,13 +19,25 @@ composer kaspi/psr7-wizard
 
 $httpFactory = new \Kaspi\HttpMessage\HttpFactory();
 
-/** @var \Psr\Http\Message\ServerRequestInterface $serverRequest */
-$serverRequest = (new \Kaspi\Psr7Wizard\ServerRequestWizard(
+$wizard = new \Kaspi\Psr7Wizard\ServerRequestWizard(
     serverRequestFactory: $httpFactory,
     streamFactory: $httpFactory,
     uploadedFileFactory: $httpFactory,
     uriFactory: $httpFactory,  
-))->fromGlobals();
+);
+
+/** @var \Psr\Http\Message\ServerRequestInterface $serverRequest */
+$serverRequest = $wizard->fromGlobals();
+
+// or create by params
+$wizard->fromParams(
+    serverParams: $serverEnv,
+    queryParams: $queryStringParams,
+    cookieParams: $cookie,
+    files: $uploadedFiles,
+    parsedBody: $parsedBody,
+    body: 'raw content'  
+);
 ```
 
 ## Development environment

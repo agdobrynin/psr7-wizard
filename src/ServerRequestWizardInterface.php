@@ -16,7 +16,7 @@ interface ServerRequestWizardInterface
      * @param array                       $queryParams  retrieve from $_GET or similar structure related to <QUERY_STRING> from web server
      * @param array                       $cookieParams retrieve from $_COOKIE or similar structure from browser cookies
      * @param array                       $files        retrieve from $_FILES or similar structure
-     * @param array                       $post         retrieve from $_POST or similar structure, parsed request body
+     * @param array                       $parsedBody   retrieve from $_POST or similar structure, parsed request body
      * @param null|StreamInterface|string $body         retrieve from <php://input> or similar input, raw data from a client
      */
     public function fromParams(
@@ -24,7 +24,7 @@ interface ServerRequestWizardInterface
         array $queryParams = [],
         array $cookieParams = [],
         array $files = [],
-        array $post = [],
+        array $parsedBody = [],
         StreamInterface|string $body = null,
     ): ServerRequestInterface;
 }

@@ -62,7 +62,7 @@ final class ServerRequestWizard implements ServerRequestWizardInterface
         array $queryParams = [],
         array $cookieParams = [],
         array $files = [],
-        array $post = [],
+        array $parsedBody = [],
         StreamInterface|string $body = null,
     ): ServerRequestInterface {
         $requestMethod = $serverParams['REQUEST_METHOD'] ?? 'GET';
@@ -79,7 +79,7 @@ final class ServerRequestWizard implements ServerRequestWizardInterface
             )->withProtocolVersion($httpProtocol)
             ->withQueryParams($queryParams)
             ->withCookieParams($cookieParams)
-            ->withParsedBody(!empty($post) ? $post : null)
+            ->withParsedBody(!empty($parsedBody) ? $parsedBody : null)
             ->withUploadedFiles($this->prepareUploadedFiles($files))
         ;
 
