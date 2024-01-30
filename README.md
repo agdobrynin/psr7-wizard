@@ -29,7 +29,11 @@ $wizard = new \Kaspi\Psr7Wizard\ServerRequestWizard(
 /** @var \Psr\Http\Message\ServerRequestInterface $serverRequest */
 $serverRequest = $wizard->fromGlobals();
 
-// or create by params
+//👆🏻 Or create by params
+$uploadedFiles = [
+    $httpFactory->createUploadedFile('/tmp/file1');
+];
+
 $wizard->fromParams(
     serverParams: $serverEnv,
     queryParams: $queryStringParams,
