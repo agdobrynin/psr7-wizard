@@ -4,9 +4,7 @@ Building ServerRequest class which implement PSR-7 ServerRequestInterface from g
 
 Require PHP 8.1 or newest.
 
-additional links:
-- [PSR-7](https://www.php-fig.org/psr/psr-7)
-- [PSR-17](https://www.php-fig.org/psr/psr-17) 
+additional links: [PSR-7](https://www.php-fig.org/psr/psr-7), [PSR-17](https://www.php-fig.org/psr/psr-17) 
 
 ## Installation
 
@@ -31,10 +29,36 @@ $wizard = new \Kaspi\Psr7Wizard\ServerRequestWizard(
 /** @var \Psr\Http\Message\ServerRequestInterface $serverRequest */
 $serverRequest = $wizard->fromGlobals();
 
-//👆🏻 Or create by params
+// ✋🏻 Or create by params 👇🏻
+$serverEnv = [
+    'REMOTE_ADDR' => '127.0.0.1',
+    'REMOTE_PORT' => '35096',
+    'SERVER_SOFTWARE' => 'PHP 8.2.14 Development Server',
+    'SERVER_PROTOCOL' => 'HTTP/1.1',
+    'SERVER_NAME' => '127.0.0.1',
+    'SERVER_PORT' => '8080',
+    'REQUEST_URI' => '/',
+    'REQUEST_METHOD' => 'POST',
+    'SCRIPT_NAME' => '/index.php',
+    'CONTENT_LENGTH' => '53',
+    'HTTP_CONTENT_LENGTH' => '53'
+];
+$queryStringParams = [
+    'search' => 'php%',
+];
+$cookie = [
+    'save' => 'no'
+];
 $uploadedFiles = [
     $httpFactory->createUploadedFile('/tmp/file1');
 ];
+$parsedBody = [
+    'form' => [
+        'name' => 'Joe',
+        'contact' => '+555-36-89'
+    ],
+];
+$body = 'form%5Bname%5D=Joe&form%5Bcontact%5D=%2B555-36-89';
 
 $wizard->fromParams(
     serverParams: $serverEnv,
@@ -42,7 +66,7 @@ $wizard->fromParams(
     cookieParams: $cookie,
     files: $uploadedFiles,
     parsedBody: $parsedBody,
-    body: 'raw content'  
+    body: $body 
 );
 ```
 
