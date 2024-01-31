@@ -115,7 +115,7 @@ use Psr\Http\Message\ServerRequestInterface;
                     'SERVER_NAME' => '127.0.0.1',
                     'SERVER_PORT' => '8080',
                     'REQUEST_METHOD' => 'GET',
-                    'PHP_SELF' => '/index.php',
+                    'ORIG_PATH_INFO' => '/index.php',
                     'QUERY_STRING' => 'list=ok',
                     'HTTP_HOST' => 'hello.st:8080',
                 ],
@@ -126,10 +126,19 @@ use Psr\Http\Message\ServerRequestInterface;
                     'SERVER_NAME' => '127.0.0.1',
                     'SERVER_PORT' => '80',
                     'REQUEST_METHOD' => 'GET',
-                    'PHP_SELF' => '/index.php',
+                    'ORIG_PATH_INFO' => '/index.php',
                     'QUERY_STRING' => '0',
                 ],
                 'expect' => 'http://127.0.0.1/index.php?0',
+            ],
+            'without REQUEST_URI and ORIG_PATH_INFO but has QUERY_STRING' => [
+                'server' => [
+                    'SERVER_NAME' => '127.0.0.1',
+                    'SERVER_PORT' => '80',
+                    'REQUEST_METHOD' => 'GET',
+                    'QUERY_STRING' => 'list=ok',
+                ],
+                'expect' => 'http://127.0.0.1/?list=ok',
             ],
         ])
     ;
