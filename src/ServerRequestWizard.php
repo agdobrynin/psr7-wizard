@@ -161,14 +161,18 @@ final class ServerRequestWizard implements ServerRequestWizardInterface
 
         if ('' !== ($requestUriWithQuery = $serverParams['REQUEST_URI'] ?? '')) {
             $requestUri = $requestUriWithQuery;
-        } elseif ('' !== ($phpSelf = $serverParams['PHP_SELF'] ?? '')) {
-            $requestUri = $phpSelf
+        } elseif ('' !== ($originPath = $serverParams['ORIG_PATH_INFO'] ?? '')) {
+            $requestUri = $originPath
                 .('' !== ($query = $serverParams['QUERY_STRING'] ?? '')
+                    ? '?'.$query
+                    : '');
+        } else {
+            $requestUri = '/'.('' !== ($query = $serverParams['QUERY_STRING'] ?? '')
                     ? '?'.$query
                     : '');
         }
 
-        $uriString = $scheme.'://'.$host.($requestUri ?? '');
+        $uriString = $scheme.'://'.$host.$requestUri;
 
         return $this->uriFactory->createUri($uriString);
     }
