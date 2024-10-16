@@ -18,11 +18,11 @@ use Kaspi\Psr7Wizard\ServerRequestWizard;
 })
     ->with([
         'Not set protocol' => [
-            'server' => [],
-            'protocol' => '1.1',
+            [],
+            '1.1',
         ],
         'Has version 1.1' => [
-            'server' => [
+            [
                 'DOCUMENT_ROOT' => '/home/slider/tmp',
                 'REMOTE_ADDR' => '127.0.0.1',
                 'REMOTE_PORT' => '40792',
@@ -34,10 +34,10 @@ use Kaspi\Psr7Wizard\ServerRequestWizard;
                 'REQUEST_METHOD' => 'GET',
                 'SCRIPT_NAME' => '/index.php',
             ],
-            'protocol' => '1.1',
+            '1.1',
         ],
         'Has version 1.0' => [
-            'server' => [
+            [
                 'DOCUMENT_ROOT' => '/home/slider/tmp',
                 'REMOTE_ADDR' => '127.0.0.1',
                 'REMOTE_PORT' => '40792',
@@ -49,7 +49,7 @@ use Kaspi\Psr7Wizard\ServerRequestWizard;
                 'REQUEST_METHOD' => 'GET',
                 'SCRIPT_NAME' => '/index.php',
             ],
-            'protocol' => '1.0',
+            '1.0',
         ],
     ])
     ->covers(ServerRequestWizard::class)

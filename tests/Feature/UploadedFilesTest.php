@@ -239,7 +239,7 @@ use Psr\Http\Message\UploadedFileInterface;
         ->throws(InvalidArgumentException::class)
         ->with([
             'one file without tmp_name key' => [
-                'files' => [
+                [
                     'docs' => [
                         'name' => 'my-document.txt',
                         'error' => 0,
@@ -247,7 +247,7 @@ use Psr\Http\Message\UploadedFileInterface;
                 ],
             ],
             'one file without error key' => [
-                'files' => [
+                [
                     'docs' => [
                         'name' => 'my-document.txt',
                         'tmp_name' => '/aaaa.txt',
@@ -255,7 +255,7 @@ use Psr\Http\Message\UploadedFileInterface;
                 ],
             ],
             'wrong structure of files' => [
-                'files' => [
+                [
                     'my-form' => [
                         'name' => 'file1.txt',
                         'tmp_name' => (object) [],
@@ -264,7 +264,7 @@ use Psr\Http\Message\UploadedFileInterface;
                 ],
             ],
             'many files without error key' => [
-                'files' => [
+                [
                     'my-form' => [
                         'name' => [
                             'details' => [

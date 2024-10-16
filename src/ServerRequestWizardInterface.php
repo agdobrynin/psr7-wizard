@@ -25,6 +25,6 @@ interface ServerRequestWizardInterface
         array $cookieParams = [],
         array $files = [],
         array $parsedBody = [],
-        StreamInterface|string $body = null,
+        null|StreamInterface|string $body = null,
     ): ServerRequestInterface;
 }
