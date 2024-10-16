@@ -33,14 +33,14 @@ use Kaspi\Psr7Wizard\ServerRequestWizard;
         'HTTP_ORIGIN' => 'http://127.0.0.1:8080',
     ];
 
-    \it('content type convert', function ($server, $expect) {
+    \it('content type convert', function ($srvArgs, $expect) {
         $httpFactory = new HttpFactory();
         $sr = (new ServerRequestWizard(
             $httpFactory,
             $httpFactory,
             $httpFactory,
             $httpFactory
-        ))->fromParams($server);
+        ))->fromParams($srvArgs);
 
         \expect(\array_intersect_key($sr->getHeaders(), $expect))
             ->toBe($expect)
@@ -48,7 +48,7 @@ use Kaspi\Psr7Wizard\ServerRequestWizard;
     })
         ->with([
             'content type test' => [
-                'server' => \array_merge(
+                \array_merge(
                     $simpleServerParams,
                     [
                         'CONTENT_LENGTH' => '363715',
@@ -57,44 +57,44 @@ use Kaspi\Psr7Wizard\ServerRequestWizard;
                         'HTTP_CONTENT_TYPE' => 'multipart/form-data; boundary=----WebKitFormBoundaryIRB3O6SZxfL5m4Lt',
                     ]
                 ),
-                'expect' => [
+                [
                     'Content-Length' => ['363715'],
                     'Content-Type' => ['multipart/form-data; boundary=----WebKitFormBoundaryIRB3O6SZxfL5m4Lt'],
                 ],
             ],
             'headers with numeric' => [
-                'server' => \array_merge(
+                \array_merge(
                     $simpleServerParams,
                     [
                         'HTTP_0' => 'zero header',
                         'HTTP_1234' => 'numeric header',
                     ]
                 ),
-                'expect' => [
+                [
                     '0' => ['zero header'],
                     '1234' => ['numeric header'],
                 ],
             ],
             'authorization header' => [
-                'server' => \array_merge(
+                \array_merge(
                     $simpleServerParams,
                     ['REDIRECT_HTTP_AUTHORIZATION' => 'auth-token']
                 ),
-                'expect' => ['Authorization' => ['auth-token']],
+                ['Authorization' => ['auth-token']],
             ],
             'authorization header php_auth_digest' => [
-                'server' => \array_merge(
+                \array_merge(
                     $simpleServerParams,
                     ['PHP_AUTH_DIGEST' => 'value']
                 ),
-                'expect' => ['Authorization' => ['value']],
+                ['Authorization' => ['value']],
             ],
             'authorization php_auth_user' => [
-                'server' => \array_merge(
+                \array_merge(
                     $simpleServerParams,
                     ['PHP_AUTH_USER' => 'admin', 'PHP_AUTH_PW' => 'pass']
                 ),
-                'expect' => ['Authorization' => ['Basic '.\base64_encode('admin:pass')]],
+                ['Authorization' => ['Basic '.\base64_encode('admin:pass')]],
             ],
         ])
     ;
