@@ -38,7 +38,7 @@ $simpleServerParams = [
 
 \dataset('server_request', [
     'set #1' => [
-        'server' => $simpleServerParams,
-        'expectUri' => 'http://hello.st:8080?list=ok',
+        $simpleServerParams,
+        'http://hello.st:8080?list=ok',
     ],
 ]);
