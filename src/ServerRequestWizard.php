@@ -63,7 +63,7 @@ final class ServerRequestWizard implements ServerRequestWizardInterface
         array $cookieParams = [],
         array $files = [],
         array $parsedBody = [],
-        null|StreamInterface|string $body = null,
+        StreamInterface|string|null $body = null,
     ): ServerRequestInterface {
         $requestMethod = $serverParams['REQUEST_METHOD'] ?? 'GET';
         $httpProtocol = 1 === preg_match('/(\d\.\d)$/', $serverParams['SERVER_PROTOCOL'] ?? '', $matches)

@@ -2,26 +2,43 @@
 
 declare(strict_types=1);
 
+namespace Tests\Kaspi\Psr7Wizard;
+
+use Generator;
 use Kaspi\HttpMessage\HttpFactory;
 use Kaspi\Psr7Wizard\ServerRequestWizard;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
 
-\it('Test protocol version', function ($server, $protocol) {
-    $httpFactory = new HttpFactory();
-    $sr = (new ServerRequestWizard(
-        $httpFactory,
-        $httpFactory,
-        $httpFactory,
-        $httpFactory
-    ))->fromParams(serverParams: $server);
+/**
+ * @internal
+ */
+#[CoversClass(ServerRequestWizard::class)]
+class ProtocolVersionTest extends TestCase
+{
+    #[DataProvider('protocolVersionProvider')]
+    public function testProtocolVersion($server, $protocol): void
+    {
+        $httpFactory = new HttpFactory();
+        $sr = (new ServerRequestWizard(
+            $httpFactory,
+            $httpFactory,
+            $httpFactory,
+            $httpFactory
+        ))->fromParams(serverParams: $server);
 
-    \expect($sr->getProtocolVersion())->toBe($protocol);
-})
-    ->with([
-        'Not set protocol' => [
+        self::assertEquals($protocol, $sr->getProtocolVersion());
+    }
+
+    public static function protocolVersionProvider(): Generator
+    {
+        yield 'Not set protocol' => [
             [],
             '1.1',
-        ],
-        'Has version 1.1' => [
+        ];
+
+        yield 'Has version 1.1' => [
             [
                 'DOCUMENT_ROOT' => '/home/slider/tmp',
                 'REMOTE_ADDR' => '127.0.0.1',
@@ -35,8 +52,9 @@ use Kaspi\Psr7Wizard\ServerRequestWizard;
                 'SCRIPT_NAME' => '/index.php',
             ],
             '1.1',
-        ],
-        'Has version 1.0' => [
+        ];
+
+        yield 'Has version 1.0' => [
             [
                 'DOCUMENT_ROOT' => '/home/slider/tmp',
                 'REMOTE_ADDR' => '127.0.0.1',
@@ -50,7 +68,6 @@ use Kaspi\Psr7Wizard\ServerRequestWizard;
                 'SCRIPT_NAME' => '/index.php',
             ],
             '1.0',
-        ],
-    ])
-    ->covers(ServerRequestWizard::class)
-;
+        ];
+    }
+}
