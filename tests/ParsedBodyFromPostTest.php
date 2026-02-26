@@ -2,11 +2,21 @@
 
 declare(strict_types=1);
 
+namespace Tests\Kaspi\Psr7Wizard;
+
 use Kaspi\HttpMessage\HttpFactory;
 use Kaspi\Psr7Wizard\ServerRequestWizard;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\TestCase;
 
-\describe('Test parsed body', function () {
-    \it('from POST', function () {
+/**
+ * @internal
+ */
+#[CoversClass(ServerRequestWizard::class)]
+class ParsedBodyFromPostTest extends TestCase
+{
+    public function testParsedBodyFromPost(): void
+    {
         $exist = $_POST;
         $_POST = ['list' => 'ok', 0 => 'true', 'desc' => true];
 
@@ -18,12 +28,13 @@ use Kaspi\Psr7Wizard\ServerRequestWizard;
             $httpFactory
         ))->fromGlobals();
 
-        \expect($sr->getParsedBody())->toBe($_POST);
+        self::assertEquals($_POST, $sr->getParsedBody());
 
         $_POST = $exist;
-    });
+    }
 
-    \it('post is empty', function () {
+    public function testParsedBodyFromPostIsEmpty(): void
+    {
         $httpFactory = new HttpFactory();
         $sr = (new ServerRequestWizard(
             $httpFactory,
@@ -32,8 +43,6 @@ use Kaspi\Psr7Wizard\ServerRequestWizard;
             $httpFactory
         ))->fromGlobals();
 
-        \expect($sr->getParsedBody())->toBeNull();
-    });
-})
-    ->covers(ServerRequestWizard::class)
-;
+        self::assertNull($sr->getParsedBody());
+    }
+}

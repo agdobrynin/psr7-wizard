@@ -8,7 +8,7 @@
         "source": "https://github.com/agdobrynin/psr7-wizard/tree/main"
     },
     "require": {
-        "php": "^8.1 || ^8.2 || ^8.3 || ^8.4",
+        "php": "^8.1 || ^8.2 || ^8.3 || ^8.4 || ^8.5",
         "psr/http-message": "1.1 || ^2.0",
         "psr/http-factory": "^1.0"
     },
@@ -40,19 +40,18 @@
     "scripts-descriptions": {
         "fixer": "Run PHP Coding Standards Fixer",
         "test" : "Run Pest",
-        "phan" : "Run static analizer with AST extention",
-        "phan-poly" : "Run static analizer with with polyfill parser (without AST extention)"
+        "phan" : "Run static analyzer with AST extension",
+        "phan-poly" : "Run static analyzer with with polyfill parser (without AST extention)"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.46",
         "phan/phan": "^5.4",
-        "pestphp/pest": "^2.31",
+        "phpunit/phpunit": "^10.5",
         "mikey179/vfsstream": "^1.6",
-        "kaspi/http-message": "^1.1"
+        "kaspi/http-message": "^1.3"
     },
-    "config": {
-        "allow-plugins": {
-            "pestphp/pest-plugin": true
-        }
+    "provide": {
+        "psr/http-message-implementation": "1.1 || ^2.0",
+        "psr/http-factory-implementation": "^1.0"
     }
 }
