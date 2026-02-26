@@ -27,6 +27,7 @@ use function uniqid;
 class UploadedFilesTest extends TestCase
 {
     protected HttpFactory $httpFactory;
+    protected ServerRequestWizard $serverRequestWizard;
 
     protected function setUp(): void
     {
