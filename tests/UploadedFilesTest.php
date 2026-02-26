@@ -2,14 +2,34 @@
 
 declare(strict_types=1);
 
+namespace Tests\Kaspi\Psr7Wizard;
+
+use Generator;
+use InvalidArgumentException;
 use Kaspi\HttpMessage\HttpFactory;
 use Kaspi\Psr7Wizard\ServerRequestWizard;
 use org\bovigo\vfs\vfsStream;
-use Psr\Http\Message\ServerRequestInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\UploadedFileInterface;
 
-\describe('Test for uploaded files', function () {
-    \beforeEach(function () {
+use function file_get_contents;
+use function filesize;
+use function restore_error_handler;
+use function set_error_handler;
+use function uniqid;
+
+/**
+ * @internal
+ */
+#[CoversClass(ServerRequestWizard::class)]
+class UploadedFilesTest extends TestCase
+{
+    protected HttpFactory $httpFactory;
+
+    protected function setUp(): void
+    {
         $this->httpFactory = new HttpFactory();
         $this->serverRequestWizard = new ServerRequestWizard(
             $this->httpFactory,
@@ -17,9 +37,15 @@ use Psr\Http\Message\UploadedFileInterface;
             $this->httpFactory,
             $this->httpFactory
         );
-    });
+    }
 
-    \it('one field', function () {
+    protected function tearDown(): void
+    {
+        unset($this->httpFactory);
+    }
+
+    public function testOneField(): void
+    {
         vfsStream::setup(structure: [
             'phpUxcOty' => 'Hello world in file',
         ]);
@@ -34,21 +60,20 @@ use Psr\Http\Message\UploadedFileInterface;
             ],
         ];
 
-        /** @var ServerRequestInterface $sr */
         $sr = $this->serverRequestWizard->fromParams([], files: $files);
 
         /** @var UploadedFileInterface $file */
         $file = $sr->getUploadedFiles()['docs'];
 
-        \expect($file->getSize())->toBe(19)
-            ->and($file->getClientMediaType())->toBe('plain/text')
-            ->and($file->getClientFilename())->toBe('my-document.txt')
-            ->and($file->getError())->toBe(UPLOAD_ERR_OK)
-            ->and((string) $file->getStream())->toBe('Hello world in file')
-        ;
-    });
+        self::assertEquals(19, $file->getSize());
+        self::assertEquals('plain/text', $file->getClientMediaType());
+        self::assertEquals('my-document.txt', $file->getClientFilename());
+        self::assertEquals(UPLOAD_ERR_OK, $file->getError());
+        self::assertEquals('Hello world in file', (string) $file->getStream());
+    }
 
-    \it('one file with array notation', function () {
+    public function testOneFileWithArrayNotation(): void
+    {
         vfsStream::setup(structure: [
             'phpmFLrzD' => 'Note print here 🎈',
         ]);
@@ -78,27 +103,26 @@ use Psr\Http\Message\UploadedFileInterface;
             ],
         ];
 
-        /** @var ServerRequestInterface $sr */
         $sr = $this->serverRequestWizard->fromParams([], files: $files);
 
         /** @var UploadedFileInterface $file */
         $file = $sr->getUploadedFiles()['my-form']['details']['note'];
 
-        \expect($file->getSize())->toBe(20)
-            ->and($file->getClientMediaType())->toBe('plain/text')
-            ->and($file->getClientFilename())->toBe('my-document.txt')
-            ->and($file->getError())->toBe(UPLOAD_ERR_OK)
-            ->and((string) $file->getStream())->toBe('Note print here 🎈')
-        ;
-    });
+        self::assertEquals(20, $file->getSize());
+        self::assertEquals('plain/text', $file->getClientMediaType());
+        self::assertEquals('my-document.txt', $file->getClientFilename());
+        self::assertEquals(UPLOAD_ERR_OK, $file->getError());
+        self::assertEquals('Note print here 🎈', (string) $file->getStream());
+    }
 
-    \it('multiple upload files', function () {
-        $root = vfsStream::setup(structure: [
+    public function testMultipleUploadFiles(): void
+    {
+        vfsStream::setup(structure: [
             'phpmFLrzD' => 'File content 1',
             'phpV2pBil' => 'Content file 2',
             'php8RUG8v' => '🎈',
             'phpPonUpg' => 'I am tester',
-            'phpwkiI9l' => \file_get_contents(__DIR__.'/../Fixtures/clip-icon.svg'),
+            'phpwkiI9l' => file_get_contents(__DIR__.'/Fixtures/clip-icon.svg'),
         ]);
 
         $files = [
@@ -158,58 +182,54 @@ use Psr\Http\Message\UploadedFileInterface;
             ],
         ];
 
-        /** @var ServerRequestInterface $sr */
         $sr = $this->serverRequestWizard->fromParams([], files: $files);
 
         /** @var UploadedFileInterface[] $notes */
         $notes = $sr->getUploadedFiles()['my-form']['details']['notes'];
 
-        \expect($notes)->toHaveCount(3)
-        // file 1
-            ->and((string) $notes[0]->getStream())->toBe('File content 1')
-            ->and($notes[0]->getSize())->toBe(14)
-        // file 2
-            ->and((string) $notes[1]->getStream())->toBe('Content file 2')
-            ->and($notes[1]->getSize())->toBe(14)
-        // file 3
-            ->and((string) $notes[2]->getStream())->toBe('🎈')
-            ->and($notes[2]->getSize())->toBe(4)
-        ;
+        self::assertCount(3, $notes);
+        self::assertEquals('File content 1', (string) $notes[0]->getStream());
+        self::assertEquals(14, $notes[0]->getSize());
+
+        self::assertEquals('Content file 2', (string) $notes[1]->getStream());
+        self::assertEquals(14, (string) $notes[1]->getSize());
+
+        self::assertEquals('🎈', (string) $notes[2]->getStream());
+        self::assertEquals(4, (string) $notes[2]->getSize());
 
         // File in my-form.details array
         /** @var UploadedFileInterface $details */
         $details = $sr->getUploadedFiles()['my-form']['details'][0];
-        \expect($details->getClientMediaType())->toBe('image/svg+xml')
-            ->and((string) $details->getStream())->toStartWith('<?xml version="1.0" encoding="utf-8"')
-            ->and($details->getSize())->toBe(\filesize(__DIR__.'/../Fixtures/clip-icon.svg'))
-        ;
+
+        self::assertEquals('image/svg+xml', $details->getClientMediaType());
+        self::assertStringStartsWith('<?xml version="1.0" encoding="utf-8"', (string) $details->getStream());
+        self::assertEquals(filesize(__DIR__.'/Fixtures/clip-icon.svg'), $details->getSize());
 
         // resume as one file
         /** @var UploadedFileInterface $resume */
         $resume = $sr->getUploadedFiles()['resume'];
 
-        \expect((string) $resume->getStream())->toBe('I am tester')
-            ->and($resume->getError())->toBe(UPLOAD_ERR_OK)
-            ->and($resume->getClientFilename())->toBe('resume.txt')
-            ->and($resume->getClientMediaType())->toBe('application/msword')
-        ;
+        self::assertEquals('I am tester', (string) $resume->getStream());
+        self::assertEquals(UPLOAD_ERR_OK, $resume->getError());
+        self::assertEquals('resume.txt', $resume->getClientFilename());
+        self::assertEquals('application/msword', $resume->getClientMediaType());
 
         // image file not loaded
         /** @var UploadedFileInterface $image */
         $image = $sr->getUploadedFiles()['image'];
 
-        \expect($image->getError())->toBe(UPLOAD_ERR_NO_FILE)
-            ->and($image->getSize())->toBe(0)
-            ->and($image->getClientFilename())->toBe('')
-        ;
-    });
+        self::assertEquals(UPLOAD_ERR_NO_FILE, $image->getError());
+        self::assertEquals(0, $image->getSize());
+        self::assertEquals('', $image->getClientFilename());
+    }
 
-    \it('cannot create stream from uploaded file', function () {
-        \set_error_handler(static fn () => false);
+    public function testCannotCreateStreamFromUploadedFile(): void
+    {
+        set_error_handler(static fn () => false);
 
         $files = [
             'docs' => [
-                'tmp_name' => '/tmp/'.\uniqid('fix', true),
+                'tmp_name' => '/tmp/'.uniqid('fix', true),
                 'name' => 'my-document.txt',
                 'size' => 19,
                 'type' => 'plain/text',
@@ -217,94 +237,97 @@ use Psr\Http\Message\UploadedFileInterface;
             ],
         ];
 
-        /** @var ServerRequestInterface $sr */
         $sr = $this->serverRequestWizard->fromParams([], files: $files);
 
         /** @var UploadedFileInterface $docs */
         $docs = $sr->getUploadedFiles()['docs'];
 
-        \expect($docs->getStream()->getSize())->toBe(0)
-            ->and((string) $docs->getStream())->toBe('')
-        ;
+        self::assertEquals(0, $docs->getStream()->getSize());
+        self::assertEquals('', (string) $docs->getStream());
 
-        \restore_error_handler();
-    });
+        restore_error_handler();
+    }
 
-    \it('wrong structure for uploaded file', function ($files) {
-        \set_error_handler(static fn () => false);
+    #[DataProvider('dataProviderWrongStructureForUploadedFile')]
+    public function testWrongStructureForUploadedFile($files): void
+    {
+        $this->expectException(InvalidArgumentException::class);
 
-        /** @var ServerRequestInterface $sr */
-        $sr = $this->serverRequestWizard->fromParams([], files: $files);
-    })
-        ->throws(InvalidArgumentException::class)
-        ->with([
-            'one file without tmp_name key' => [
-                [
-                    'docs' => [
-                        'name' => 'my-document.txt',
-                        'error' => 0,
+        $this->serverRequestWizard->fromParams([], files: $files);
+    }
+
+    public static function dataProviderWrongStructureForUploadedFile(): Generator
+    {
+        yield 'one file without tmp_name key' => [
+            [
+                'docs' => [
+                    'name' => 'my-document.txt',
+                    'error' => 0,
+                ],
+            ],
+        ];
+
+        yield 'one file without error key' => [
+            [
+                'docs' => [
+                    'name' => 'my-document.txt',
+                    'tmp_name' => '/aaaa.txt',
+                ],
+            ],
+        ];
+
+        yield 'wrong structure of files' => [
+            [
+                'my-form' => [
+                    'name' => 'file1.txt',
+                    'tmp_name' => (object) [],
+                    'error' => 0,
+                ],
+            ],
+        ];
+
+        yield 'many files without error key' => [
+            [
+                'my-form' => [
+                    'name' => [
+                        'details' => [
+                            'notes' => [
+                                0 => 'note-first.txt',
+                            ],
+                            0 => 'clip.svg',
+                        ],
+                    ],
+                    'type' => [
+                        'details' => [
+                            'notes' => [
+                                0 => 'plain/text',
+                            ],
+                            0 => 'image/svg+xml',
+                        ],
+                    ],
+                    'tmp_name' => [
+                        'details' => [
+                            'notes' => [
+                                0 => '/tmp/phpmFLrzD'.uniqid('test', true),
+                            ],
+                            0 => '/tmp/phpmMmTeW'.uniqid('test', true),
+                        ],
+                    ],
+                    'error' => [
+                        'details' => [
+                            'notes' => [
+                                0 => 0,
+                            ],
+                            // Error key for field my-form[details][0] must be here
+                        ],
                     ],
                 ],
             ],
-            'one file without error key' => [
-                [
-                    'docs' => [
-                        'name' => 'my-document.txt',
-                        'tmp_name' => '/aaaa.txt',
-                    ],
-                ],
-            ],
-            'wrong structure of files' => [
-                [
-                    'my-form' => [
-                        'name' => 'file1.txt',
-                        'tmp_name' => (object) [],
-                        'error' => 0,
-                    ],
-                ],
-            ],
-            'many files without error key' => [
-                [
-                    'my-form' => [
-                        'name' => [
-                            'details' => [
-                                'notes' => [
-                                    0 => 'note-first.txt',
-                                ],
-                                0 => 'clip.svg',
-                            ],
-                        ],
-                        'type' => [
-                            'details' => [
-                                'notes' => [
-                                    0 => 'plain/text',
-                                ],
-                                0 => 'image/svg+xml',
-                            ],
-                        ],
-                        'tmp_name' => [
-                            'details' => [
-                                'notes' => [
-                                    0 => '/tmp/phpmFLrzD'.\uniqid('test', true),
-                                ],
-                                0 => '/tmp/phpmMmTeW'.\uniqid('test', true),
-                            ],
-                        ],
-                        'error' => [
-                            'details' => [
-                                'notes' => [
-                                    0 => 0,
-                                ],
-                                // Error key for field my-form[details][0] must be here
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-        ])
-    ;
+        ];
+    }
 
-    \it('add files with UploadedFileInterface', function () {
+    public function testAddFilesWithUploadedFileInterface(): void
+    {
         $root = vfsStream::setup();
         $files = [
             $this->httpFactory->createUploadedFile(
@@ -315,9 +338,8 @@ use Psr\Http\Message\UploadedFileInterface;
             ),
         ];
 
-        /** @var ServerRequestInterface $sr */
         $sr = $this->serverRequestWizard->fromParams([], files: $files);
 
-        \expect($sr->getUploadedFiles())->toBe($files);
-    });
-})->covers(ServerRequestWizard::class);
+        self::assertEquals($files, $sr->getUploadedFiles());
+    }
+}

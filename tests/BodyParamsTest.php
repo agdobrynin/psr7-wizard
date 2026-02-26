@@ -2,11 +2,21 @@
 
 declare(strict_types=1);
 
+namespace Tests\Kaspi\Psr7Wizard;
+
 use Kaspi\HttpMessage\HttpFactory;
 use Kaspi\Psr7Wizard\ServerRequestWizard;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\TestCase;
 
-\describe('Test Body by params', function () {
-    \it('with string ', function () {
+/**
+ * @internal
+ */
+#[CoversClass(ServerRequestWizard::class)]
+class BodyParamsTest extends TestCase
+{
+    public function testBodyParamsWithString(): void
+    {
         $httpFactory = new HttpFactory();
 
         $sr = (new ServerRequestWizard(
@@ -16,10 +26,11 @@ use Kaspi\Psr7Wizard\ServerRequestWizard;
             $httpFactory
         ))->fromParams(serverParams: [], body: 'Hello world 😎');
 
-        \expect((string) $sr->getBody())->toBe('Hello world 😎');
-    });
+        self::assertEquals('Hello world 😎', (string) $sr->getBody());
+    }
 
-    \it('with StreamInterface', function () {
+    public function testBodyParamsWithStreamInterface(): void
+    {
         $httpFactory = new HttpFactory();
 
         $sr = (new ServerRequestWizard(
@@ -29,8 +40,6 @@ use Kaspi\Psr7Wizard\ServerRequestWizard;
             $httpFactory
         ))->fromParams(serverParams: [], body: $httpFactory->createStream('🎨 Hello world'));
 
-        \expect((string) $sr->getBody())->toBe('🎨 Hello world');
-    });
-})
-    ->covers(ServerRequestWizard::class)
-;
+        self::assertEquals('🎨 Hello world', (string) $sr->getBody());
+    }
+}
